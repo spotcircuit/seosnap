@@ -7,15 +7,16 @@
     "build": "prisma generate && node ./node_modules/next/dist/bin/next build",
     "start": "node ./node_modules/next/dist/bin/next start",
     "lint": "node ./node_modules/next/dist/bin/next lint",
-    "postinstall": "prisma generate && npx playwright install chromium"
+    "postinstall": "prisma generate"
   },
   "dependencies": {
     "@prisma/client": "^5.22.0",
+    "@sparticuz/chromium": "^141.0.0",
     "chrome-launcher": "^1.2.1",
     "lighthouse": "^12.8.2",
     "next": "^14.2.0",
     "openai": "^4.63.0",
-    "playwright": "^1.47.0",
+    "playwright-core": "^1.56.1",
     "react": "^18.3.0",
     "react-dom": "^18.3.0",
     "zod": "^3.23.0"

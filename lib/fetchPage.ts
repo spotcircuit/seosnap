@@ -1,4 +1,5 @@
-import { chromium, Browser } from 'playwright'
+import { chromium, Browser } from 'playwright-core'
+import chromiumPkg from '@sparticuz/chromium'
 
 export type Extracted = {
   title?: string
@@ -21,7 +22,14 @@ let browserInstance: Browser | null = null
 
 async function getBrowser(): Promise<Browser> {
   if (!browserInstance) {
-    browserInstance = await chromium.launch({ headless: true })
+    // @sparticuz/chromium for Vercel serverless
+    const executablePath = await chromiumPkg.executablePath()
+
+    browserInstance = await chromium.launch({
+      args: chromiumPkg.args,
+      executablePath,
+      headless: true, // Always headless in serverless
+    })
   }
   return browserInstance
 }
@@ -38,13 +46,13 @@ export async function fetchAndExtract(url: string): Promise<Extracted> {
       timeout: 30000
     })
 
-    // Extract metadata with short timeouts for optional elements
+    // Extract metadata
     const title = await page.title()
-    const metaDescription = await page.locator('meta[name="description"]').getAttribute('content', { timeout: 2000 }).catch(() => null) || undefined
-    const canonical = await page.locator('link[rel="canonical"]').getAttribute('href', { timeout: 2000 }).catch(() => null) || undefined
-    const robotsMeta = await page.locator('meta[name="robots"]').getAttribute('content', { timeout: 2000 }).catch(() => null) || undefined
-    const lang = await page.locator('html').getAttribute('lang', { timeout: 2000 }).catch(() => null) || undefined
-    const viewport = await page.locator('meta[name="viewport"]').getAttribute('content', { timeout: 2000 }).catch(() => null) || undefined
+    const metaDescription = await page.locator('meta[name="description"]').getAttribute('content').catch(() => null) || undefined
+    const canonical = await page.locator('link[rel="canonical"]').getAttribute('href').catch(() => null) || undefined
+    const robotsMeta = await page.locator('meta[name="robots"]').getAttribute('content').catch(() => null) || undefined
+    const lang = await page.locator('html').getAttribute('lang').catch(() => null) || undefined
+    const viewport = await page.locator('meta[name="viewport"]').getAttribute('content').catch(() => null) || undefined
 
     // Count headings
     const h1Count = await page.locator('h1').count()
