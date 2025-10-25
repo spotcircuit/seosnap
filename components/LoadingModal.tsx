@@ -1,5 +1,7 @@
 'use client'
 
+import { useEffect, useState } from 'react'
+
 type Props = {
   isOpen: boolean
   stage: 'fetching' | 'checking' | 'lighthouse' | 'ai' | 'saving'
@@ -7,78 +9,69 @@ type Props = {
 
 const stages = {
   fetching: {
-    title: 'Fetching Page',
-    description: 'Analyzing page structure and metadata...',
+    title: 'Crawling Website',
+    description: 'Launching headless browser, rendering JavaScript, extracting HTML structure and metadata...',
     icon: '🌐',
-    progress: 20
   },
   checking: {
-    title: 'Running SEO Checks',
-    description: 'Validating 9 technical SEO requirements...',
+    title: 'Analyzing SEO',
+    description: 'Validating title length, meta description, canonical URLs, heading structure, image alt text...',
     icon: '✅',
-    progress: 40
   },
   lighthouse: {
-    title: 'Google Lighthouse Analysis',
-    description: 'Measuring performance, accessibility, and best practices...',
+    title: 'Running Google Lighthouse',
+    description: 'Measuring Core Web Vitals (LCP, FCP, CLS), performance metrics, accessibility, best practices...',
     icon: '⚡',
-    progress: 60
   },
   ai: {
-    title: 'AI Analysis',
-    description: 'GPT-5 Nano generating personalized recommendations...',
+    title: 'Generating AI Recommendations',
+    description: 'GPT-5 Nano analyzing 100+ data points to create personalized action plan...',
     icon: '🤖',
-    progress: 80
   },
   saving: {
     title: 'Saving Report',
-    description: 'Finalizing your SEO audit report...',
+    description: 'Writing audit results to database...',
     icon: '💾',
-    progress: 95
   }
 }
 
 export default function LoadingModal({ isOpen, stage }: Props) {
+  const [dots, setDots] = useState('')
+
+  // Animate dots for "Analyzing..." effect
+  useEffect(() => {
+    if (!isOpen) return
+    const interval = setInterval(() => {
+      setDots(prev => prev.length >= 3 ? '' : prev + '.')
+    }, 500)
+    return () => clearInterval(interval)
+  }, [isOpen])
+
   if (!isOpen) return null
 
   const currentStage = stages[stage]
 
   return (
     <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-      <div className="bg-white rounded-2xl shadow-2xl p-8 max-w-md w-full mx-4 animate-fadeIn">
+      <div className="bg-white rounded-2xl shadow-2xl p-8 max-w-lg w-full mx-4">
         {/* Icon */}
         <div className="text-center mb-6">
           <div className="text-6xl mb-4 animate-bounce">
             {currentStage.icon}
           </div>
           <h2 className="text-2xl font-bold text-gray-900 mb-2">
-            {currentStage.title}
+            {currentStage.title}{dots}
           </h2>
-          <p className="text-gray-600">
+          <p className="text-sm text-gray-600 leading-relaxed">
             {currentStage.description}
           </p>
         </div>
 
-        {/* Progress Bar */}
+        {/* Indeterminate Progress Bar */}
         <div className="relative mb-6">
-          <div className="h-3 bg-gray-200 rounded-full overflow-hidden">
-            <div
-              className="h-full bg-gradient-to-r from-blue-500 to-purple-600 rounded-full transition-all duration-500 ease-out"
-              style={{ width: `${currentStage.progress}%` }}
-            />
+          <div className="h-2 bg-gray-200 rounded-full overflow-hidden">
+            <div className="h-full bg-gradient-to-r from-blue-500 to-purple-600 rounded-full animate-indeterminate"></div>
           </div>
-          <div className="text-right text-sm text-gray-500 mt-2">
-            {currentStage.progress}% Complete
-          </div>
-        </div>
-
-        {/* Stage Indicators */}
-        <div className="flex justify-between text-xs text-gray-400 mb-4">
-          <div className={stage === 'fetching' ? 'text-blue-600 font-semibold' : ''}>Fetch</div>
-          <div className={stage === 'checking' ? 'text-blue-600 font-semibold' : ''}>Check</div>
-          <div className={stage === 'lighthouse' ? 'text-blue-600 font-semibold' : ''}>Lighthouse</div>
-          <div className={stage === 'ai' ? 'text-blue-600 font-semibold' : ''}>AI</div>
-          <div className={stage === 'saving' ? 'text-blue-600 font-semibold' : ''}>Save</div>
         </div>
 
         {/* Spinner */}
@@ -86,6 +79,25 @@ export default function LoadingModal({ isOpen, stage }: Props) {
           <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
         </div>
       </div>
+
+      <style jsx>{`
+        @keyframes indeterminate {
+          0% {
+            transform: translateX(-100%);
+            width: 30%;
+          }
+          50% {
+            width: 50%;
+          }
+          100% {
+            transform: translateX(400%);
+            width: 30%;
+          }
+        }
+        .animate-indeterminate {
+          animation: indeterminate 1.5s ease-in-out infinite;
+        }
+      `}</style>
     </div>
   )
 }

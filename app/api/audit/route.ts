@@ -25,11 +25,11 @@ export async function POST(req: NextRequest) {
     // Run SEO checks (pass URL for canonical validation)
     const checks = runChecks(extracted, normalized)
 
-    // Calculate simple score (100 - 5 per failed check)
+    // Calculate SEO checks score (100 - 5 per failed check)
     const failedChecks = Object.entries(checks).filter(
       ([key, value]) => key !== 'notes' && !value
     ).length
-    const score = Math.max(0, 100 - failedChecks * 5)
+    const seoCheckScore = Math.max(0, 100 - failedChecks * 5)
 
     // Run PageSpeed Insights (Google's Lighthouse API) FIRST
     let lighthouseData = null
@@ -76,6 +76,23 @@ export async function POST(req: NextRequest) {
     // Get AI advice (now with Lighthouse data)
     const aiAdvice = await getAIAdvice(aiInput)
 
+    // Calculate final score: weighted combination of SEO checks + Lighthouse
+    // 40% SEO checks + 60% Lighthouse average (performance weighted more heavily)
+    let finalScore = seoCheckScore
+
+    if (lighthouseData) {
+      // Weighted Lighthouse average: performance counts more (40%), others 20% each
+      const lighthouseAvg = (
+        (lighthouseData.scores.performance * 0.4) +
+        (lighthouseData.scores.accessibility * 0.2) +
+        (lighthouseData.scores.bestPractices * 0.2) +
+        (lighthouseData.scores.seo * 0.2)
+      )
+
+      // Combine: 40% SEO checks + 60% Lighthouse
+      finalScore = Math.round((seoCheckScore * 0.4) + (lighthouseAvg * 0.6))
+    }
+
     // Upsert site
     const site = await prisma.site.upsert({
       where: { url: normalized },
@@ -87,7 +104,7 @@ export async function POST(req: NextRequest) {
     const report = await prisma.report.create({
       data: {
         siteId: site.id,
-        score,
+        score: finalScore,
         rawMeta: extracted as never,
         checks: checks as never,
         aiAdvice: aiAdvice as never,
