@@ -77,11 +77,12 @@ Schema:
 Guidance:
 - Keep JSON compact and valid. Avoid markdown or commentary.
 - Score 0–100 reflecting technical discoverability & relevance (not content depth).
-- If Lighthouse data is provided, factor performance, accessibility, and Core Web Vitals into your analysis.
-- Pay special attention to low Lighthouse scores (< 50) and slow Core Web Vitals (FCP > 3s, LCP > 4s, CLS > 0.25).
-- Limit top_issues to 3–5 items; each with why + fix + impact.
+- If Lighthouse data is provided, ALWAYS factor performance, accessibility, and Core Web Vitals into your analysis.
+- IMPORTANT: Acknowledge GOOD performance! If Core Web Vitals are passing (FCP < 1.8s, LCP < 2.5s, CLS < 0.1), mention this as a strength in top_issues or quick_wins.
+- Flag performance issues: low Lighthouse scores (< 50), slow Core Web Vitals (FCP > 3s, LCP > 4s, CLS > 0.25), or poor performance scores (< 50).
+- Limit top_issues to 3–5 items; each with why + fix + impact. Include at least one positive item if performance is strong.
 - rewrite_suggestions: concise, non-clickbait, best-practice lengths.
-- prioritized_actions: ordered list of specific next steps, including performance fixes if Lighthouse scores are poor.`
+- prioritized_actions: ordered list of specific next steps, including performance optimizations if needed OR acknowledging strong performance.`
 
   const userPrompt = JSON.stringify(input)
 
