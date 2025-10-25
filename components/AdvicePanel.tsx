@@ -18,12 +18,25 @@ export default function AdvicePanel({ advice }: AdvicePanelProps) {
     }
   }
 
-  const isPositiveIssue = (issue: { issue: string; fix: string }) => {
-    const positiveKeywords = ['excellent', 'good', 'strong', 'perfect', 'well done', 'great']
+  const isPositiveIssue = (issue: { issue: string; fix: string; impact: string }) => {
+    // Only Low impact can be positive feedback
+    if (issue.impact !== 'Low') {
+      return false
+    }
+
     const issueText = issue.issue.toLowerCase()
     const fixText = issue.fix.toLowerCase()
 
-    // Check if this is a positive item
+    // Check for negative keywords - if present, it's NOT positive
+    const negativeKeywords = ['slow', 'issue', 'problem', 'error', 'missing', 'too long', 'too short', 'delayed', 'failed']
+    const hasNegativeKeyword = negativeKeywords.some(keyword => issueText.includes(keyword))
+
+    if (hasNegativeKeyword) {
+      return false
+    }
+
+    // Check for positive indicators
+    const positiveKeywords = ['excellent', 'good', 'perfect', 'well done', 'great', 'positive', 'strength']
     const hasPositiveKeyword = positiveKeywords.some(keyword => issueText.includes(keyword))
     const noFixNeeded = fixText.includes('n/a') || fixText.includes('no fix') || fixText.includes('maintain')
 
@@ -48,15 +61,21 @@ export default function AdvicePanel({ advice }: AdvicePanelProps) {
     }
   }
 
+  // Sort issues by impact priority: High > Medium > Low
+  const sortedIssues = [...advice.top_issues].sort((a, b) => {
+    const impactOrder = { High: 0, Medium: 1, Low: 2 }
+    return impactOrder[a.impact as keyof typeof impactOrder] - impactOrder[b.impact as keyof typeof impactOrder]
+  })
+
   return (
     <div className="bg-slate-800 border border-gray-700 rounded-lg shadow-xl p-6 space-y-6">
       <h2 className="text-2xl font-bold text-white">AI-Powered Recommendations</h2>
 
-      {advice.top_issues.length > 0 && (
+      {sortedIssues.length > 0 && (
         <div>
           <h3 className="text-xl font-semibold text-white mb-3">Top Issues</h3>
           <div className="space-y-4">
-            {advice.top_issues.map((issue, idx) => (
+            {sortedIssues.map((issue, idx) => (
               <div
                 key={idx}
                 className={getIssueStyle(issue)}
