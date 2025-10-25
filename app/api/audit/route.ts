@@ -5,6 +5,9 @@ import { getAIAdvice } from '@/lib/ai'
 import { runPageSpeedInsights } from '@/lib/pagespeed'
 import { prisma } from '@/lib/prisma'
 
+// Force dynamic rendering - don't try to build this at compile time
+export const dynamic = 'force-dynamic'
+
 export async function POST(req: NextRequest) {
   try {
     const { url } = await req.json()

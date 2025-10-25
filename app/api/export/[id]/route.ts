@@ -5,6 +5,8 @@ import { Advice } from '@/lib/ai'
 import { ChecksResultWithNotes } from '@/lib/checks'
 import { LighthouseMetrics } from '@/lib/lighthouse'
 
+export const dynamic = 'force-dynamic'
+
 export async function POST(
   req: NextRequest,
   { params }: { params: { id: string } }
