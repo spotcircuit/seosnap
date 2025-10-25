@@ -25,7 +25,7 @@ export function runChecks(ex: {
   ogTagsPresent: boolean
   twitterTagsPresent: boolean
   hasSchemaLD: boolean
-}): ChecksResultWithNotes {
+}, requestedUrl?: string): ChecksResultWithNotes {
   const titleLen = ex.title?.length || 0
   const descLen = ex.metaDescription?.length || 0
 
@@ -60,10 +60,41 @@ export function runChecks(ex: {
     notes.single_h1 = `Found ${ex.h1Count} H1 tags (should be 1)`
   }
 
+  // Canonical URL validation
+  let canonical_present = false
+  if (ex.canonical) {
+    // Check if canonical is an absolute URL
+    const isAbsolute = ex.canonical.startsWith('http://') || ex.canonical.startsWith('https://')
+
+    if (!isAbsolute) {
+      notes.canonical_present = `Relative URL: ${ex.canonical} (should be absolute)`
+      canonical_present = false
+    } else {
+      canonical_present = true
+
+      // Check if it matches the requested URL (normalize trailing slashes)
+      if (requestedUrl) {
+        const normalizeUrl = (url: string) => url.replace(/\/$/, '').toLowerCase()
+        const normalizedCanonical = normalizeUrl(ex.canonical)
+        const normalizedRequested = normalizeUrl(requestedUrl)
+
+        if (normalizedCanonical !== normalizedRequested) {
+          notes.canonical_present = `Points to: ${ex.canonical}`
+        } else {
+          notes.canonical_present = ex.canonical
+        }
+      } else {
+        notes.canonical_present = ex.canonical
+      }
+    }
+  } else {
+    notes.canonical_present = 'Missing canonical tag'
+  }
+
   return {
     title_length_ok,
     meta_description_ok,
-    canonical_present: !!ex.canonical,
+    canonical_present,
     robots_allows_index: !ex.robotsMeta || !ex.robotsMeta.toLowerCase().includes('noindex'),
     single_h1,
     image_alt_coverage,

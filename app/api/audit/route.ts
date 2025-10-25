@@ -22,8 +22,8 @@ export async function POST(req: NextRequest) {
     // Extract page data
     const extracted = await fetchAndExtract(normalized)
 
-    // Run SEO checks
-    const checks = runChecks(extracted)
+    // Run SEO checks (pass URL for canonical validation)
+    const checks = runChecks(extracted, normalized)
 
     // Calculate simple score (100 - 5 per failed check)
     const failedChecks = Object.entries(checks).filter(
