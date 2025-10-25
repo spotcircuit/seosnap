@@ -18,28 +18,20 @@ export type Extracted = {
   hasSchemaLD: boolean
 }
 
-let browserInstance: Browser | null = null
-
-async function getBrowser(): Promise<Browser> {
-  if (!browserInstance) {
-    // @sparticuz/chromium for Vercel serverless
-    const executablePath = await chromiumPkg.executablePath()
-
-    browserInstance = await chromium.launch({
-      args: chromiumPkg.args,
-      executablePath,
-      headless: true, // Always headless in serverless
-    })
-  }
-  return browserInstance
-}
-
 export async function fetchAndExtract(url: string): Promise<Extracted> {
-  const browser = await getBrowser()
-  const context = await browser.newContext()
-  const page = await context.newPage()
+  // Launch fresh browser for each request to avoid stale instance issues
+  // In serverless, browser instances can get closed between requests
+  const executablePath = await chromiumPkg.executablePath()
+
+  const browser = await chromium.launch({
+    args: chromiumPkg.args,
+    executablePath,
+    headless: true,
+  })
 
   try {
+    const context = await browser.newContext()
+    const page = await context.newPage()
     // Navigate to URL with faster wait strategy
     // 'load' waits for page load event, not for all network activity
     // This is MUCH faster than 'networkidle' (seconds vs minutes)
@@ -135,14 +127,9 @@ export async function fetchAndExtract(url: string): Promise<Extracted> {
       hasSchemaLD: extracted.hasSchemaLD,
     }
   } finally {
-    await context.close()
-  }
-}
-
-// Cleanup function to close browser when needed
-export async function closeBrowser() {
-  if (browserInstance) {
-    await browserInstance.close()
-    browserInstance = null
+    // Always close browser after each request
+    await browser.close().catch(() => {
+      // Ignore errors if browser already closed
+    })
   }
 }
