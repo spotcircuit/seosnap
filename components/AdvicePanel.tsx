@@ -18,6 +18,36 @@ export default function AdvicePanel({ advice }: AdvicePanelProps) {
     }
   }
 
+  const isPositiveIssue = (issue: { issue: string; fix: string }) => {
+    const positiveKeywords = ['excellent', 'good', 'strong', 'perfect', 'well done', 'great']
+    const issueText = issue.issue.toLowerCase()
+    const fixText = issue.fix.toLowerCase()
+
+    // Check if this is a positive item
+    const hasPositiveKeyword = positiveKeywords.some(keyword => issueText.includes(keyword))
+    const noFixNeeded = fixText.includes('n/a') || fixText.includes('no fix') || fixText.includes('maintain')
+
+    return hasPositiveKeyword || noFixNeeded
+  }
+
+  const getIssueStyle = (issue: { issue: string; fix: string; impact: string }) => {
+    if (isPositiveIssue(issue)) {
+      return 'border-l-4 border-green-500 bg-green-900/20 p-4 rounded'
+    }
+
+    // Negative issues - style based on impact
+    switch (issue.impact) {
+      case 'High':
+        return 'border-l-4 border-red-500 bg-red-900/20 p-4 rounded'
+      case 'Medium':
+        return 'border-l-4 border-yellow-500 bg-yellow-900/20 p-4 rounded'
+      case 'Low':
+        return 'border-l-4 border-blue-500 bg-blue-900/20 p-4 rounded'
+      default:
+        return 'border-l-4 border-red-500 bg-red-900/20 p-4 rounded'
+    }
+  }
+
   return (
     <div className="bg-slate-800 border border-gray-700 rounded-lg shadow-xl p-6 space-y-6">
       <h2 className="text-2xl font-bold text-white">AI-Powered Recommendations</h2>
@@ -29,7 +59,7 @@ export default function AdvicePanel({ advice }: AdvicePanelProps) {
             {advice.top_issues.map((issue, idx) => (
               <div
                 key={idx}
-                className="border-l-4 border-red-500 bg-red-900/20 p-4 rounded"
+                className={getIssueStyle(issue)}
               >
                 <div className="flex items-start justify-between gap-2 mb-2">
                   <h4 className="font-bold text-lg text-white">{issue.issue}</h4>

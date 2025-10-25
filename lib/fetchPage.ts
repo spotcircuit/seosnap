@@ -46,10 +46,23 @@ export async function fetchAndExtract(url: string): Promise<Extracted> {
       timeout: 30000
     })
 
-    // Extract metadata
+    // Extract metadata with multiple strategies for reliability
     const title = await page.title()
-    const metaDescription = await page.locator('meta[name="description"]').getAttribute('content').catch(() => null) || undefined
-    const canonical = await page.locator('link[rel="canonical"]').getAttribute('href').catch(() => null) || undefined
+
+    // Meta description - try multiple selectors (case-insensitive)
+    const metaDescription = await page.evaluate(() => {
+      const meta = document.querySelector('meta[name="description" i]') ||
+                   document.querySelector('meta[name="Description" i]')
+      return meta?.getAttribute('content') || null
+    }).catch(() => null) || undefined
+
+    // Canonical - try multiple selectors
+    const canonical = await page.evaluate(() => {
+      const link = document.querySelector('link[rel="canonical" i]') ||
+                   document.querySelector('link[rel="Canonical" i]')
+      return link?.getAttribute('href') || null
+    }).catch(() => null) || undefined
+
     const robotsMeta = await page.locator('meta[name="robots"]').getAttribute('content').catch(() => null) || undefined
     const lang = await page.locator('html').getAttribute('lang').catch(() => null) || undefined
     const viewport = await page.locator('meta[name="viewport"]').getAttribute('content').catch(() => null) || undefined
