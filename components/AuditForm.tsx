@@ -27,42 +27,19 @@ export default function AuditForm({
     onAuditStart()
 
     try {
-      // Start the API call immediately
       setLoadingStage('fetching')
-      const apiPromise = fetch('/api/audit', {
+
+      const response = await fetch('/api/audit', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ url }),
       })
 
-      // Progress through stages while API runs (~3 minutes total)
-      // Fetching page with Playwright: ~40s
-      await new Promise(resolve => setTimeout(resolve, 40000))
-
-      setLoadingStage('checking')
-      // SEO checks: ~10s
-      await new Promise(resolve => setTimeout(resolve, 10000))
-
-      setLoadingStage('lighthouse')
-      // PageSpeed API (slowest part): ~80s
-      await new Promise(resolve => setTimeout(resolve, 80000))
-
-      setLoadingStage('ai')
-      // AI analysis: ~40s
-      await new Promise(resolve => setTimeout(resolve, 40000))
-
-      setLoadingStage('saving')
-
-      // Wait for API to complete if not done yet
-      const response = await apiPromise
       const data = await response.json()
 
       if (!response.ok) {
         throw new Error(data.error || 'Failed to audit URL')
       }
-
-      // Final save: ~2s
-      await new Promise(resolve => setTimeout(resolve, 2000))
 
       onAuditComplete(data.report)
     } catch (err) {
