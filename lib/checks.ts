@@ -33,17 +33,21 @@ export function runChecks(ex: {
 
   // Title length check
   const title_length_ok = titleLen >= 50 && titleLen <= 60
-  if (!title_length_ok && titleLen > 0) {
+  if (titleLen === 0) {
+    notes.title_length_ok = 'Missing title tag'
+  } else if (!title_length_ok) {
     notes.title_length_ok = `${titleLen} chars (optimal: 50-60)`
-  } else if (title_length_ok) {
+  } else {
     notes.title_length_ok = `${titleLen} chars`
   }
 
   // Meta description check
   const meta_description_ok = descLen >= 120 && descLen <= 160
-  if (!meta_description_ok && descLen > 0) {
+  if (descLen === 0) {
+    notes.meta_description_ok = 'Missing meta description'
+  } else if (!meta_description_ok) {
     notes.meta_description_ok = `${descLen} chars (optimal: 120-160)`
-  } else if (meta_description_ok) {
+  } else {
     notes.meta_description_ok = `${descLen} chars`
   }
 
