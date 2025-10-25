@@ -4,38 +4,10 @@ import { useEffect, useState } from 'react'
 
 type Props = {
   isOpen: boolean
-  stage: 'fetching' | 'checking' | 'lighthouse' | 'ai' | 'saving'
+  stage?: string // Not used anymore, kept for compatibility
 }
 
-const stages = {
-  fetching: {
-    title: 'Crawling Website',
-    description: 'Launching headless browser, rendering JavaScript, extracting HTML structure and metadata...',
-    icon: '🌐',
-  },
-  checking: {
-    title: 'Analyzing SEO',
-    description: 'Validating title length, meta description, canonical URLs, heading structure, image alt text...',
-    icon: '✅',
-  },
-  lighthouse: {
-    title: 'Running Google Lighthouse',
-    description: 'Measuring Core Web Vitals (LCP, FCP, CLS), performance metrics, accessibility, best practices...',
-    icon: '⚡',
-  },
-  ai: {
-    title: 'Generating AI Recommendations',
-    description: 'GPT-5 Nano analyzing 100+ data points to create personalized action plan...',
-    icon: '🤖',
-  },
-  saving: {
-    title: 'Saving Report',
-    description: 'Writing audit results to database...',
-    icon: '💾',
-  }
-}
-
-export default function LoadingModal({ isOpen, stage }: Props) {
+export default function LoadingModal({ isOpen }: Props) {
   const [dots, setDots] = useState('')
 
   // Animate dots for "Analyzing..." effect
@@ -49,21 +21,25 @@ export default function LoadingModal({ isOpen, stage }: Props) {
 
   if (!isOpen) return null
 
-  const currentStage = stages[stage]
-
   return (
     <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
       <div className="bg-white rounded-2xl shadow-2xl p-8 max-w-lg w-full mx-4">
         {/* Icon */}
         <div className="text-center mb-6">
           <div className="text-6xl mb-4 animate-bounce">
-            {currentStage.icon}
+            🔍
           </div>
           <h2 className="text-2xl font-bold text-gray-900 mb-2">
-            {currentStage.title}{dots}
+            Analyzing Your Website{dots}
           </h2>
-          <p className="text-sm text-gray-600 leading-relaxed">
-            {currentStage.description}
+          <div className="text-sm text-gray-600 leading-relaxed space-y-2">
+            <p>• Crawling with headless browser (Playwright)</p>
+            <p>• Running Google Lighthouse performance tests</p>
+            <p>• Validating SEO best practices</p>
+            <p>• Generating AI recommendations (GPT-5 Nano)</p>
+          </div>
+          <p className="text-xs text-gray-500 mt-4">
+            This typically takes 60-120 seconds
           </p>
         </div>
 
