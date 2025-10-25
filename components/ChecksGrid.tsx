@@ -18,9 +18,9 @@ const CHECK_LABELS: Record<string, string> = {
 
 export default function ChecksGrid({ checks }: ChecksGridProps) {
   return (
-    <div className="bg-slate-800 border border-gray-700 rounded-lg shadow-xl p-6">
-      <h2 className="text-xl font-bold text-white mb-4">Technical Checks</h2>
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+    <div className="bg-slate-800 border border-gray-700 rounded-lg shadow-xl p-4 sm:p-6">
+      <h2 className="text-lg sm:text-xl font-bold text-white mb-3 sm:mb-4">Technical Checks</h2>
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-4">
         {Object.entries(CHECK_LABELS).map(([key, label]) => {
           const passed = checks[key as keyof ChecksResultWithNotes] as boolean
           const note = checks.notes?.[key]
