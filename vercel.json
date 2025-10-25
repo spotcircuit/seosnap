@@ -2,15 +2,5 @@
   "buildCommand": "npm run build",
   "devCommand": "npm run dev",
   "installCommand": "npm install",
-  "framework": "nextjs",
-  "rewrites": [
-    {
-      "source": "/api/audit",
-      "destination": "https://your-railway-app.railway.app/api/audit"
-    }
-  ],
-  "env": {
-    "DATABASE_URL": "@database_url",
-    "OPENAI_API_KEY": "@openai_api_key"
-  }
+  "framework": "nextjs"
 }
