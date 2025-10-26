@@ -8,21 +8,26 @@ SEO Snap analyzes web pages for technical SEO issues and provides prioritized, a
 
 ## Features
 
-- **Comprehensive Page Analysis**: Fetches and analyzes HTML, metadata, and page structure using Playwright
-- **Technical SEO Checks**: 9 automated validators for title, meta description, canonical URLs, robots meta, headings, images, Open Graph, Twitter Cards, and Schema.org markup
-- **AI-Powered Recommendations**: OpenAI generates prioritized issues, quick wins, and suggested rewrites for title and meta description
+- **Comprehensive Page Analysis**: Fetches and analyzes HTML, metadata, and page structure using Playwright (optimized for 10-15s extraction)
+- **Technical SEO Checks**: 9 automated validators with detailed, actionable feedback for title, meta description, canonical URLs, robots meta, headings, images, Open Graph, Twitter Cards, and Schema.org markup
+- **Google Lighthouse Integration**: Real-time performance, accessibility, best practices, and SEO scoring via PageSpeed Insights API
+- **Core Web Vitals Monitoring**: Track FCP, LCP, CLS, TBT, Speed Index, and Time to Interactive
+- **Intelligent Score Calculation**: Composite score combining SEO checks (40%) and Lighthouse metrics (60%) with performance weighted heavily
+- **AI-Powered Recommendations**: GPT-5 Nano generates prioritized issues with impact levels (High/Medium/Low), quick wins, and suggested rewrites
 - **Audit History**: Save and view all audits for each URL with timestamps and scores
 - **Report Comparison**: Compare two reports side-by-side to see score changes and which checks improved/worsened
 - **Markdown Export**: Download comprehensive audit reports in Markdown format
+- **Mobile-First Design**: Fully responsive interface optimized for mobile, tablet, and desktop
 
 ## Tech Stack
 
 - **Framework**: Next.js 14 (App Router) with TypeScript
-- **UI**: Tailwind CSS
-- **Database**: Neon PostgreSQL (or SQLite for local development)
-- **Scraping**: Playwright (headless browser automation)
-- **AI**: OpenAI GPT-4o-mini
-- **Validation**: Zod for schema validation
+- **UI**: Tailwind CSS with mobile-first responsive design
+- **Database**: Neon PostgreSQL (or SQLite for local development) via Prisma ORM
+- **Browser Automation**: Playwright with @sparticuz/chromium for serverless deployment
+- **Performance Testing**: Google PageSpeed Insights API (Lighthouse)
+- **AI**: OpenAI GPT-5 Nano with structured JSON output
+- **Validation**: Zod for type-safe schema validation
 
 ## Setup Instructions
 
@@ -86,11 +91,17 @@ SEO Snap analyzes web pages for technical SEO issues and provides prioritized, a
 ## Usage
 
 1. **Enter a URL** in the audit form
-2. **Click "Analyze"** to start the audit (takes 5-15 seconds)
+2. **Click "Analyze"** to start the audit (takes 60-120 seconds)
+   - Crawls website with headless browser
+   - Runs Google Lighthouse tests
+   - Validates SEO best practices
+   - Generates AI recommendations
 3. **View results** including:
-   - Overall SEO score (0-100)
-   - Technical checks with pass/fail indicators
-   - AI-generated top issues with fixes
+   - Composite SEO score (0-100) combining technical checks + Lighthouse metrics
+   - 9 technical checks with detailed pass/fail feedback
+   - Lighthouse scores (Performance, Accessibility, Best Practices, SEO)
+   - Core Web Vitals metrics (FCP, LCP, CLS, TBT, TTI)
+   - AI-generated top issues sorted by impact (High/Medium/Low)
    - Quick wins and prioritized actions
    - Suggested title and meta description rewrites
 4. **Access history** in the sidebar to view past audits
@@ -178,16 +189,32 @@ model Report {
 ## Design Decisions
 
 ### Playwright vs Cheerio
-We chose Playwright over static HTML parsing (cheerio) to ensure accurate metadata extraction from modern JavaScript-rendered websites. While this adds 2-5 seconds per audit vs <1 second, it provides reliable results for all sites.
+We chose Playwright over static HTML parsing (cheerio) to ensure accurate metadata extraction from modern JavaScript-rendered websites. Optimized to extract in ~10 seconds vs minutes with previous `waitUntil: 'networkidle'` approach.
 
 ### Browser Lifecycle Management
-A singleton browser instance is reused across requests to minimize overhead while ensuring proper cleanup. This balances performance with resource consumption.
+Fresh browser instance per request in serverless environments prevents stale instance crashes. Uses `@sparticuz/chromium` for Vercel compatibility with proper cleanup in finally blocks.
 
-### Score Calculation
-Simple penalty-based scoring (100 minus 5 per failed check) provides a baseline. The AI also generates its own nuanced score considering context and severity.
+### Score Calculation (Composite Approach)
+**Formula**: `(SEO Checks × 0.4) + (Lighthouse Average × 0.6)`
+
+Lighthouse weighted average:
+- Performance: 40%
+- Accessibility: 20%
+- Best Practices: 20%
+- SEO: 20%
+
+This ensures performance issues significantly impact the final score, preventing misleading "Excellent" ratings for slow sites.
+
+**Example**: Site with 80 SEO score but 30 Performance = **73 final score** ("Good"), not 80 ("Excellent")
 
 ### AI Model Selection
-GPT-4o-mini offers cost efficiency while providing high-quality SEO recommendations. The structured JSON output with Zod validation ensures data integrity.
+GPT-5 Nano with strict structured JSON output and Zod validation. Enforces exact impact values (High/Medium/Low) to prevent validation errors. AI acknowledges good performance in addition to identifying issues.
+
+### Performance Optimizations
+1. **Single page.evaluate() call**: Consolidated 15+ browser round-trips into 1 extraction call
+2. **Changed waitUntil strategy**: 'load' instead of 'networkidle' (seconds vs minutes)
+3. **Optimized image iteration**: Single-pass alt text checking vs individual async calls
+4. **No fake delays**: Modal displays immediately when API responds
 
 ## Tradeoffs
 
@@ -261,14 +288,16 @@ npx prisma migrate dev --name migration_name
 
 ## Future Enhancements
 
-- **Request Queuing**: Limit concurrent browser instances
-- **Rate Limiting**: IP-based throttling
-- **Robots.txt/Sitemap Validation**: Additional technical checks
-- **PDF Export**: Use Playwright PDF generation
-- **Lighthouse Integration**: Add performance and accessibility scores
+- **Request Queuing**: Limit concurrent browser instances for cost optimization
+- **Rate Limiting**: IP-based throttling to prevent abuse
+- **Robots.txt/Sitemap Validation**: Additional technical checks for crawlability
+- **PDF Export**: Use Playwright PDF generation for branded reports
+- **Historical Trend Graphs**: Visualize score changes over time
 - **Authentication**: User accounts and private reports
-- **Scheduling**: Automated recurring audits
-- **Webhooks**: Notifications for score changes
+- **Scheduling**: Automated recurring audits with email notifications
+- **Webhooks**: Real-time notifications for score changes
+- **Competitor Comparison**: Side-by-side analysis of multiple domains
+- **Custom Check Rules**: Allow users to define custom validation rules
 
 ## License
 
